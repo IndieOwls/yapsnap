@@ -1,0 +1,2 @@
+include model_checksums.sha256
+include requirements-lock.txt

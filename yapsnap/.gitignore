@@ -8,3 +8,4 @@ venv/
 transcripts/
 *.txt
 !requirements.txt
+!requirements-lock.txt

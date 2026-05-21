@@ -1,0 +1,20 @@
+# yapsnap — locked dependencies with cryptographic hashes
+#
+# Install with:  pip install -r requirements-lock.txt .
+# Update after:  pip install . && pip freeze | grep -v yapsnap > requirements-lock.txt
+#                (then add --hash for each package)
+#
+# NOTE: These hashes are platform-specific (cp313, manylinux x86_64).
+# Regenerate for other platforms with: pip hash <wheel-file>
+
+numpy==2.4.6 \
+    --hash=sha256:a7830bab239b79cda9c08c2da014761cafb48da6150e1da17ac06283f43b6089
+
+sherpa-onnx==1.13.2 \
+    --hash=sha256:198312f6d2d2befec14bc387559ca60cf5522c3a7f9e2d24100474ef783d8edc
+
+sherpa-onnx-core==1.13.2 \
+    --hash=sha256:544e81156c832ed24f9bf7176c4592705a86103a6d545bfa4449953c5bdb4e76
+
+yt-dlp==2026.3.17 \
+    --hash=sha256:32992db94303a8a5d211a183f2174834fe7f8c29d83ed2e7a324eae97a8f26d8

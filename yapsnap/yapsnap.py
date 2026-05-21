@@ -17,6 +17,7 @@ INPUT may be:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import shutil
@@ -42,6 +43,56 @@ HF_BASE = "https://huggingface.co"
 HTTP_UA = "yapsnap/0.1 (+https://github.com/)"
 
 URL_RE = re.compile(r"^https?://", re.IGNORECASE)
+
+# ---------------------------------------------------------------------------
+# Model integrity — checksums for auto-downloaded models
+# ---------------------------------------------------------------------------
+
+CHECKSUM_MANIFEST = Path(__file__).parent / "model_checksums.sha256"
+
+# Populated on first call to _verify_checksum()
+_CHECKSUMS: dict[str, str] | None = None
+
+
+def _load_checksums() -> dict[str, str]:
+    """Load the SHA-256 manifest from model_checksums.txt.
+
+    Returns {filename: expected_hex_digest}. Returns empty dict if the manifest
+    is missing (graceful degradation — checksum verification is best-effort).
+    """
+    path = CHECKSUM_MANIFEST
+    if not path.is_file():
+        return {}
+    checksums: dict[str, str] = {}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) == 2:
+                checksums[parts[0]] = parts[1]
+    return checksums
+
+
+def _verify_checksum(file_path: Path, expected_sha256: str) -> None:
+    """Verify a file's SHA-256 digest. Raises RuntimeError on mismatch."""
+    sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        while True:
+            chunk = f.read(1 << 20)
+            if not chunk:
+                break
+            sha256.update(chunk)
+    actual = sha256.hexdigest()
+    if actual.lower() != expected_sha256.lower():
+        raise RuntimeError(
+            f"checksum mismatch for {file_path.name}:\n"
+            f"  expected: {expected_sha256}\n"
+            f"  actual:   {actual}\n"
+            f"The model file may be corrupted or tampered with. "
+            f"Re-run to re-download, or update model_checksums.txt."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -71,12 +122,15 @@ def find_model_file(model_dir: Path, base: str) -> str:
     raise FileNotFoundError(f"No {base}(.int8).onnx found in {model_dir}")
 
 
-def _download(url: str, dest: Path) -> None:
+def _download(url: str, dest: Path, *,
+              expected_sha256: str | None = None) -> None:
     """Download a URL to a file, showing simple progress.
 
     Sends a User-Agent (HuggingFace sometimes rejects the default urllib UA).
     Sanity-checks tokens.txt as text and .onnx as binary > 1KB, so we fail loud
     instead of writing an HTML error page to disk.
+
+    When *expected_sha256* is provided, verifies the file digest after download.
     """
     print(f"  fetching {url}", file=sys.stderr)
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -113,23 +167,36 @@ def _download(url: str, dest: Path) -> None:
         raise RuntimeError(
             f"downloaded {dest.name} is only {size} bytes \u2014 likely an error page, not a model"
         )
+
+    # Cryptographic verification against known-good digest.
+    if expected_sha256:
+        _verify_checksum(tmp, expected_sha256)
+
     tmp.replace(dest)
 
 
 def ensure_default_model() -> Path:
     """Download the default Kroko English model into the user cache if missing.
-    Returns the directory containing encoder/decoder/joiner/tokens."""
+    Verifies SHA-256 checksums after download. Returns the directory containing
+    encoder/decoder/joiner/tokens."""
     cache = user_cache_dir() / DEFAULT_MODEL_REPO.replace("/", "__")
     cache.mkdir(parents=True, exist_ok=True)
     missing = [f for f in DEFAULT_MODEL_FILES if not (cache / f).is_file()]
     if not missing:
         return cache
 
+    # Load checksums once. If the manifest is missing, checksum verification
+    # is skipped (graceful degradation for development installs).
+    global _CHECKSUMS
+    if _CHECKSUMS is None:
+        _CHECKSUMS = _load_checksums()
+
     print(f"Downloading Kroko English model to {cache}", file=sys.stderr)
     for fname in missing:
         url = f"{HF_BASE}/{DEFAULT_MODEL_REPO}/resolve/main/{fname}"
+        expected = (_CHECKSUMS or {}).get(fname)
         try:
-            _download(url, cache / fname)
+            _download(url, cache / fname, expected_sha256=expected)
         except Exception as e:
             raise RuntimeError(
                 f"failed to download {fname} from {url}: {e}\n"

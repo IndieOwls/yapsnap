@@ -44,14 +44,14 @@ The first run downloads the model (~80 MB). Every run after is offline.
 
 Any URL `yt-dlp` understands works. The big ones:
 
-| Source            | Example                                                 |
-|-------------------|---------------------------------------------------------|
-| YouTube           | `https://www.youtube.com/watch?v=...`                   |
-| YouTube Shorts    | `https://www.youtube.com/shorts/...`                    |
-| X / Twitter       | `https://x.com/user/status/.../video/1`                 |
-| TikTok            | `https://www.tiktok.com/@user/video/...`                |
-| Instagram Reels   | `https://www.instagram.com/reel/.../`                   |
-| Direct media URL  | `https://example.com/clip.mp4`                          |
+| Source           | Example                                  |
+| ---------------- | ---------------------------------------- |
+| YouTube          | `https://www.youtube.com/watch?v=...`    |
+| YouTube Shorts   | `https://www.youtube.com/shorts/...`     |
+| X / Twitter      | `https://x.com/user/status/.../video/1`  |
+| TikTok           | `https://www.tiktok.com/@user/video/...` |
+| Instagram Reels  | `https://www.instagram.com/reel/.../`    |
+| Direct media URL | `https://example.com/clip.mp4`           |
 
 Plus any local file ffmpeg can decode: `.mp3`, `.mp4`, `.m4a`, `.wav`, `.webm`, `.mov`, `.mkv`, `.aac`, `.opus`, `.ogg`, `.flac`, and friends.
 
@@ -62,10 +62,10 @@ Plus any local file ffmpeg can decode: `.mp3`, `.mp4`, `.m4a`, `.wav`, `.webm`, 
 ### 1. ffmpeg
 
 | OS      | Command                                                  |
-|---------|----------------------------------------------------------|
+| ------- | -------------------------------------------------------- |
 | macOS   | `brew install ffmpeg`                                    |
-| Linux   | `sudo apt install ffmpeg` *or* `sudo dnf install ffmpeg` |
-| Windows | `winget install ffmpeg` *or* `choco install ffmpeg`      |
+| Linux   | `sudo apt install ffmpeg` _or_ `sudo dnf install ffmpeg` |
+| Windows | `winget install ffmpeg` _or_ `choco install ffmpeg`      |
 
 ### 2. yapsnap
 
@@ -125,13 +125,13 @@ Timestamps stay in original-audio time even at `--speed 1.5` or higher.
 
 ## Flags
 
-| Flag              | Description                                                          |
-|-------------------|----------------------------------------------------------------------|
-| `-o`, `--output`  | Output `.txt` path. Default: `./transcripts/<input>_transcript.txt`. |
-| `--timestamps`    | Emit `[MM:SS] sentence.` lines instead of a single paragraph.        |
-| `--speed`         | Pre-transcription speedup factor, pitch preserved. Default `1.5`.    |
-| `--keep-audio`    | Keep the downloaded audio (URL inputs only).                         |
-| `--model`         | Override the model directory. Also reads `KROKO_MODEL` env var.      |
+| Flag             | Description                                                          |
+| ---------------- | -------------------------------------------------------------------- |
+| `-o`, `--output` | Output `.txt` path. Default: `./transcripts/<input>_transcript.txt`. |
+| `--timestamps`   | Emit `[MM:SS] sentence.` lines instead of a single paragraph.        |
+| `--speed`        | Pre-transcription speedup factor, pitch preserved. Default `1.5`.    |
+| `--keep-audio`   | Keep the downloaded audio (URL inputs only).                         |
+| `--model`        | Override the model directory. Also reads `KROKO_MODEL` env var.      |
 
 ---
 

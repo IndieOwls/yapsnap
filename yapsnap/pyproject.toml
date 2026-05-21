@@ -17,7 +17,7 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 dependencies = [
-    "sherpa-onnx>=1.10",
+    "sherpa-onnx>=1.12",
     "numpy>=1.23",
     "yt-dlp>=2026.3.17",
 ]
